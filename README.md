@@ -1057,6 +1057,94 @@ export default function SideNav() {
 
 > How to add metadata and prepare your application for social sharing
 
+What is metadata:
+<br/>
+In web development, metadata provides additional details about a webpage. Metadata is not visible to the users visiting the page. Instead, it works behind the scenes, embedded within the page's HTML, usually within the `<head>` element. This hidden information is crucial for search engines and other systems that need to understand your webpage's content better.
+
+---
+
+Why is metadata important:
+<br/>
+Metadata plays a significant role in enhancing a webpage's SEO, making it more accessible and understandable for search engines and social media platforms. Proper metadata helps search engines effectively index webpages, improving their ranking in search results. Additionally, metadata like Open Graph improves the appearance of shared links on social media, making the content more appealing and informative for users.
+
+---
+
+Common metadata types:
+* **Title Metadata:** Responsible for the title of a webpage that is displayed on the browser tab. It's crucial for SEO as it helps search engines understand what the webpage is about.
+  ```html
+  <title>Page Title</title>
+  ```
+* **Description Metadata:** This metadata provides a brief overview of the webpage content and is often displayed in search engine results.
+  ```html
+  <meta name="description" content="A brief description of the page content." />
+  ```
+* **Keyword Metadata:** This metadata includes the keywords related to the webpage content, helping search engines index the page.
+  ```html
+  <meta name="keywords" content="keyword1, keyword2, keyword3" />
+  ```
+* **Open Graph Metadata:** This metadata enhances the way a webpage is represented when shared on social media platforms, providing information such as the title, description, and preview image.
+  ```html
+  <meta property="og:title" content="Title Here" />
+  <meta property="og:description" content="Description Here" />
+  <meta property="og:image" content="image_url_here" />
+  ```
+* **Favicon Metadata:** This metadata links the favicon (a small icon) to the webpage, displayed in the browser's address bar or tab.
+  ```html
+  <link rel="icon" href="path/to/favicon.ico" />
+  ```
+
+---
+
+**File-based metadata:**
+
+Next.js has a range of special files that are specifically used for metadata purposes:
+* `favicon.ico`, `apple-icon.jpg`, and `icon.jpg`: Utilized for favicons and icons
+* `opengraph-image.jpg` and `twitter-image.jpg`: Employed for social media images
+* `robots.txt`: Provides instructions for search engine crawling
+* `sitemap.xml`: Offers information about the website's structure
+
+For example, you can move `favicon.ico` and `opengraph-image.jpg` images to the root of your `/app` folder. Next.js will automatically identify and use these files as your favicon and OG image. You can verify this by checking the `<head>` element of your application in dev tools.
+
+You can also create dynamic OG images using the [ImageResponse](https://nextjs.org/docs/app/api-reference/functions/image-response) constructor.
+
+---
+
+**Config-based metadata (static):**
+
+You can export a [static metadata object](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadata-object) in a `layout.js` or `page.js` file.
+
+For example, you can create a `metadata` object in `layout.js` for base metadata and `metadata` object in all depending `page.js` for page-specific metadata.
+
+```tsx
+// /app/layout.tsx
+import { Metadata } from 'next';
+ 
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Acme Dashboard',
+    default: 'Acme Dashboard',
+  },
+  description: 'The official Next.js Learn Dashboard built with App Router.',
+  metadataBase: new URL('https://next-learn-dashboard.vercel.sh'),
+};
+```
+
+The `%s` in the template will be replaced with the specific page title.
+
+```tsx
+// /app/dashboard/invoices/page.tsx
+export const metadata: Metadata = {
+  title: 'Invoices',
+};
+```
+
+---
+
+**File-based metadata: (dynamic)**
+
+You can export a [dynamic generateMetadata function](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function) in a `layout.js` or `page.js` file.
+
+
 ## Links
 
 1. Tutorial: https://nextjs.org/learn/dashboard-app
