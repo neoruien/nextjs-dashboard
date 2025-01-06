@@ -842,6 +842,217 @@ export default function ErrorMessages({ errors, id }: {
 
 > How to add authentication to your application uing [NextAuth.js](https://next-auth.js.org/) and Middleware
 
+Understanding Authentication and Authorization:
+* Authentication: Verifies the identity of a user, typically using credentials like a username and password.
+* Authorization: Determines what resources or actions the authenticated user is allowed to access.
+* Two-factor Authentication (2FA): Adds an extra layer of security by requiring a unique token
+
+---
+
+[NextAuth.js](https://nextjs.authjs.dev/) simplifies the implementation of authentication in Next.js applications. Let's set up NextAuth.js:
+1. Install NextAuth.js (beta version, compatible with Next.js 14).
+   ```bash
+   pnpm i next-auth@beta
+   ```
+2. Generate a secret key for encrypting cookies, which is crucial for securing user sessions. This key should be added to your environment variables.
+   ```bash
+   openssl rand -base64 32
+   ```
+   ```env
+   <!-- .env -->
+   AUTH_SECRET=your-secret-key
+   ```
+3. For auth to work in production, you'll need to [add environment variables on Vercel](https://vercel.com/docs/projects/environment-variables).
+
+Create an `auth.config.ts` file at the root of your project. This file will export a configuration object for NextAuth.js. It specifies routes, protects routes with [Next.js Middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware), and optionally lists login providers like [OAuth providers](https://authjs.dev/getting-started/authentication/oauth) or [email providers](https://authjs.dev/getting-started/authentication/email).
+
+```ts
+// /auth.config.ts
+import type { NextAuthConfig } from "next-auth";
+
+export const authConfig = {
+  // Specify routes for sign-in, sign-out and error pages
+  pages: {
+    signIn: "/login",
+  },
+  // Protect routes with Next.js Middleware
+  callbacks: {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
+      if (isOnDashboard) {
+        if (isLoggedIn) return true;
+        return false; // Redirect unauthenticated users to login page
+      } else if (isLoggedIn) {
+        return Response.redirect(new URL("/dashboard", nextUrl));
+      }
+      return true;
+    },
+  },
+  // List different login options
+  providers: [],
+} satisfies NextAuthConfig;
+```
+
+Create an `middleware.ts` file at the root of your project. This file initialises NextAuth.js and specifies which paths should be protected. Middleware ensures that protected routes are not rendered until authentication is verified, enhancing security and performance.
+
+```ts
+// /middleware.ts
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
+
+export default NextAuth(authConfig).auth;
+
+export const config = {
+  // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
+  /*
+   * Match all request paths except for the ones starting with:
+   * - api (API routes)
+   * - _next/static (static files)
+   * - _next/image (image optimization files)
+   * - .png (PNG image files)
+   */
+  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
+};
+```
+
+Create an `auth.ts` file at the root of your project. This file sets up login providers and implements password hashing.
+
+```ts
+// /auth.ts
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
+import Credentials from "next-auth/providers/credentials";
+import { z } from "zod";
+import { sql } from "@vercel/postgres";
+import type { User } from "@/app/lib/definitions";
+import bcrypt from "bcrypt";
+
+async function getUser(email: string): Promise<User | undefined> {
+  try {
+    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
+    return user.rows[0];
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+    throw new Error("Failed to fetch user.");
+  }
+}
+
+export const { auth, signIn, signOut } = NextAuth({
+  ...authConfig,
+  providers: [
+    Credentials({
+      async authorize(credentials) {
+        const parsedCredentials = z
+          .object({ email: z.string().email(), password: z.string().min(6) })
+          .safeParse(credentials);
+
+        if (parsedCredentials.success) {
+          const { email, password } = parsedCredentials.data;
+          const user = await getUser(email);
+          if (!user) return null;
+          const passwordsMatch = await bcrypt.compare(password, user.password);
+
+          if (passwordsMatch) return user;
+        }
+
+        console.log("Invalid credentials");
+        return null;
+      },
+    }),
+  ],
+});
+```
+
+---
+
+Use the configured `signIn` and `signOut` functions in `/auth.ts` to handle Sign-In and Sign-Out processes.
+
+Create a server action for login. It should call the `signIn` function in `/auth.ts` and handle any [NextAuth.js errors](https://authjs.dev/reference/core/errors).
+```ts
+// /app/lib/actions.ts
+'use server';
+
+import { signIn } from '@/auth';
+import { AuthError } from 'next-auth';
+
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData,
+) {
+  try {
+    await signIn('credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid credentials.';
+        default:
+          return 'Something went wrong.';
+      }
+    }
+    throw error;
+  }
+}
+```
+
+In the login form, call the server action, handle form errors, and display the form's pending state.
+```tsx
+// app/ui/login-form.tsx
+'use client';
+
+import { useActionState } from 'react';
+import { authenticate } from '@/app/lib/actions';
+
+export default function LoginForm() {
+  const [errorMessage, formAction, isPending] = useActionState(
+    authenticate,
+    undefined
+  );
+
+  return (
+    <form action={formAction} className="space-y-3">
+      <Button className="mt-4 w-full" aria-disabled={isPending}>
+        Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+      </Button>
+      <div
+        className="flex h-8 items-end space-x-1"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {errorMessage && (
+          <>
+            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+            <p className="text-sm text-red-500">{errorMessage}</p>
+          </>
+        )}
+      </div>
+    </form>
+  );
+}
+```
+
+In the logout button, call the `signOut` function.
+```tsx
+import { signOut } from '@/auth';
+
+export default function SideNav() {
+  return (
+    <form
+      action={async () => {
+        "use server";
+        await signOut();
+      }}
+    >
+      <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
+        <PowerIcon className="w-6" />
+        <div className="hidden md:block">Sign Out</div>
+      </button>
+    </form>
+  );
+}
+```
+
 ### 10. Metadata
 
 > How to add metadata and prepare your application for social sharing
