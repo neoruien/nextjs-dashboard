@@ -1,8 +1,14 @@
 # Next.js App Course
 
-This course teaches how to build a simple financial dashboard that has a home page, a login page, and dashboard pages that are protected by authentication. Users can add, edit and delete invoices. These features are supported by an accompanying Postgres database.
+I followed [Next.js dashboard app tutorial](https://nextjs.org/learn/dashboard-app). It teaches how to build a simple financial dashboard that has a home page, a login page, and dashboard pages that are protected by authentication. Users can add, edit and delete invoices. These features are supported by an accompanying Postgres database.
 
 ![Screenshots of the dashboard project showing desktop and mobile versions](doc/image.png)
+
+I used the starter code provided on [GitHub](https://github.com/vercel/next-learn/tree/main/dashboard/starter-example).<br/>
+I finished the tutorial and hosted it on Vercel: https://nextjs-dashboard-seven-bice-16.vercel.app/<br/>
+To login, use the email `'user@nextmail.com'` and the password: `'123456'`.
+
+This README is a collection of notes for my own learning, based on tutorials and official documentation. It includes some copied material for personal reference only and is not intended for public sharing.
 
 ## Table of Contents
 
@@ -20,7 +26,6 @@ This course teaches how to build a simple financial dashboard that has a home pa
     - [8. Forms](#8-forms)
     - [9. Authentication](#9-authentication)
     - [10. Metadata](#10-metadata)
-  - [Links](#links)
 
 ## Steps
 
@@ -1175,8 +1180,3 @@ export const metadata: Metadata = {
 **File-based metadata: (dynamic)**
 
 You can export a [dynamic generateMetadata function](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function) in a `layout.js` or `page.js` file.
-
-## Links
-
-1. Tutorial: https://nextjs.org/learn/dashboard-app
-2. Example project: https://github.com/vercel/next-learn/tree/main/dashboard/starter-example
