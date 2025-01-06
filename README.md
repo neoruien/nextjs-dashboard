@@ -2,7 +2,7 @@
 
 This course teaches how to build a simple financial dashboard that has a home page, a login page, and dashboard pages that are protected by authentication. Users can add, edit and delete invoices. These features are supported by an accompanying Postgres database.
 
-![Screenshots of the dashboard project showing desktop and mobile versions](image.png)
+![Screenshots of the dashboard project showing desktop and mobile versions](doc/image.png)
 
 ## Table of Contents
 
@@ -103,7 +103,7 @@ Other styling solutions: Sass, [styled-jsx](https://github.com/vercel/styled-jsx
 
 [Cumulative Layout Shift](https://vercel.com/blog/how-core-web-vitals-affect-seo) is a metric used by Google to evaluate the performance and user experience of a website. With fonts, layout shift happens when the browser initially renders text in a fallback or system font and then swaps it out for a custom font once it has loaded. This swap can cause the text size, spacing, or layout to change, shifting elements around it.
 
-![Mock UI showing initial load of a page, followed by a layout shift as the custom font loads.](image-1.png)
+![Mock UI showing initial load of a page, followed by a layout shift as the custom font loads.](doc/image-1.png)
 
 Next.js automatically optimizes fonts in the application when you use the `next/font` module. It downloads font files at build time and hosts them with your other static assets. This means when a user visits your application, there are no additional network requests for fonts which would impact performance.
 
@@ -197,7 +197,7 @@ Read more: [How routing and navigation works](https://nextjs.org/docs/app/buildi
 
 Next.js uses file-system routing where folders are used to create nested routes. Each folder represents a route segment that maps to a URL segment.
 
-![Diagram showing how folders map to URL segments](image-2.png)
+![Diagram showing how folders map to URL segments](doc/image-2.png)
 
 `page.tsx` is a special Next.js file that exports a React component for a route to be accessible.
 
@@ -212,7 +212,7 @@ export default function Page() {
 
 You can achieve partial rendering by using layouts. Only the page components update while the layout won't re-render.
 
-![Folder structure showing the dashboard layout nesting the dashboard pages, but only the pages UI swap on navigation](image-3.png)
+![Folder structure showing the dashboard layout nesting the dashboard pages, but only the pages UI swap on navigation](doc/image-3.png)
 
 `layout.tsx` is a special Next.js file that exports a React component for sharing between multiple pages.
 
@@ -236,13 +236,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 You can create [Route Groups](https://nextjs.org/docs/app/building-your-application/routing/route-groups) to organize files into logical groups without affecting the URL path structure. When you create a new folder using parentheses `()`, the name won't be included in the URL path. You can use a route group to ensure `loading.tsx` only applies to your dashboard overview page, so `/dashboard/(overview)/page.tsx` becomes `/dashboard`. However, you can also use route groups to separate your application into sections (e.g. `(marketing)` routes and `(shop)` routes) or by teams for larger applications.
 
-![Folder structure showing how to create a route group using parentheses](image-8.png)
+![Folder structure showing how to create a route group using parentheses](doc/image-8.png)
 
 ---
 
 You can create [Dynamic Route Segments](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) when you don't know the exact segment name and want to create routes based on data, e.g. `[id]`, `[post]` or `[slug]`.
 
-![Invoices folder with a nested [id] folder, and an edit folder inside it](image-12.png)
+![Invoices folder with a nested [id] folder, and an edit folder inside it](doc/image-12.png)
 
 ---
 
@@ -389,16 +389,16 @@ export default async function Page() {
 
 **Streaming** is a data transfer technique that allows you to break down a route into smaller "chunks" and progressively stream them from the server to the client as they become ready.
 
-![Diagram showing time with sequential data fetching and parallel data fetching](image-4.png)
+![Diagram showing time with sequential data fetching and parallel data fetching](doc/image-4.png)
 
 By streaming, you can prevent slow data requests from blocking your whole page. This allows the user to see and interact with parts of the page without waiting for all the data to load before any UI can be shown to the user.
 
-![Diagram showing time with sequential data fetching and parallel data fetching](image-5.png)
+![Diagram showing time with sequential data fetching and parallel data fetching](doc/image-5.png)
 
 Streaming works well with React's component model, as each component can be considered a chunk. There are two ways you implement streaming in Next.js:
 
 1. At the page level, with the `loading.tsx` file. `loading.tsx` is a special Next.js file built on top of Suspense, it allows you to create fallback UI to show as a replacement while page content loads.
-    ![Dashboard page with 'Loading...' text](image-6.png)
+    ![Dashboard page with 'Loading...' text](doc/image-6.png)
     ```tsx
     // /app/dashboard/loading.tsx
     export default function Loading() {
@@ -406,7 +406,7 @@ Streaming works well with React's component model, as each component can be cons
     }
     ```
     You can show a loading skeleton instead of the `Loading…` text.
-    ![Dashboard page with loading skeletons](image-7.png)
+    ![Dashboard page with loading skeletons](doc/image-7.png)
 
 2. For specific components, with `<Suspense>`. You can group components to prevent popping.
     ```tsx
@@ -443,11 +443,11 @@ Streaming works well with React's component model, as each component can be cons
 
 For most web apps built today, you either choose between static and dynamic rendering for your entire application, or for a specific route. And in Next.js, if you call a dynamic function in a route (like querying your database), the entire route becomes dynamic. However, most routes are not fully static or dynamic.
 
-![Diagram showing how the sidenav is static while page's children are dynamic](image-9.png)
+![Diagram showing how the sidenav is static while page's children are dynamic](doc/image-9.png)
 
 With PPR, when a user visits a route, a static route shell that includes the navbar and product information is served, ensuring a fast initial load. The shell uses uses React's [Suspense](https://react.dev/reference/react/Suspense) to leave holes where dynamic content like the cart and recommended products will load in asynchronously. The async holes are streamed in parallel, reducing the overall load time of the page.
 
-![Partially Prerendered Product Page showing static nav and product information, and dynamic cart and recommended products](image-10.png)
+![Partially Prerendered Product Page showing static nav and product information, and dynamic cart and recommended products](doc/image-10.png)
 
 Enable PPR by adding the [ppr](https://rc.nextjs.org/docs/app/api-reference/next-config-js/ppr) option to your `next.config.mjs` file. Then, add the `experimental_ppr` segment config option to your layout.
 
@@ -506,7 +506,7 @@ Here is how you can implement the search functionality:
 
 Searching with URL params and pagination:
 
-![Screenshot of search bar, table and pagination](image-11.png)
+![Screenshot of search bar, table and pagination](doc/image-11.png)
 
 ### 8. Forms
 
